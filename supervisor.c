@@ -1,7 +1,7 @@
 /*-------------------------------------------
 Assignment  :   PA2-IPC
-Date        :   
-Authors     :   Josiah Leach    Luke Hennessy
+Date        :   03/25/2024
+Authors     :   Josiah Leach    Luke Hennessy henneslk@dukes.jmu.edu
 File Name   :   supervisor.c
 -------------------------------------------*/
 
