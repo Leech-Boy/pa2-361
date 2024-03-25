@@ -1,9 +1,10 @@
-/*-------------------------------------------
+/*----------------------------------------------------
 Assignment  :   PA2-IPC
 Date        :   03/25/2024
-Authors     :   Josiah Leach    Luke Hennessy henneslk@dukes.jmu.edu
+Authors     :   Josiah Leach    leachjr@dukes.jmu.edu
+                Luke Hennessy   henneslk@dukes.jmu.edu
 File Name   :   factory.c
--------------------------------------------*/
+----------------------------------------------------*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +16,10 @@ File Name   :   factory.c
 #include "wrappers.h"
 #include "shmem.h"
 #include "message.h"
+
+#define LOG_MUTEX_NAME
+#define MEM_MUTEX_NAME
+
 
 int main (int argc, char** argv) {
     
@@ -36,8 +41,8 @@ int main (int argc, char** argv) {
     shData* data = (shData*) Shmat( shm_id, NULL, 0 );
 
     // mutexes
-    sem_t* log_mutex = Sem_open2( "leachjr_factory.log", 0 );
-    sem_t* shm_mutex = Sem_open2( "leachjr_shm_mutex", 0 );
+    sem_t* log_mutex = Sem_open2( LOG_MUTEX_NAME, 0 );
+    sem_t* shm_mutex = Sem_open2( MEM_MUTEX_NAME, 0 );
 
 
     // initialize parts of the message that will never change

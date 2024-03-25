@@ -1,9 +1,10 @@
-/*-------------------------------------------
+/*----------------------------------------------------
 Assignment  :   PA2-IPC
 Date        :   03/25/2024
-Authors     :   Josiah Leach    Luke Hennessy henneslk@dukes.jmu.edu
+Authors     :   Josiah Leach    leachjr@dukes.jmu.edu
+                Luke Hennessy   henneslk@dukes.jmu.edu
 File Name   :   supervisor.c
--------------------------------------------*/
+----------------------------------------------------*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,6 +17,11 @@ File Name   :   supervisor.c
 #include "wrappers.h"
 #include "shmem.h"
 #include "message.h"
+
+#define MEM_MUTEX_NAME
+#define FAC_DONE_SEM_NAME
+#define PRINT_REPORT_SEM_NAME
+
 
 int main( int argc, char** argv ) {
 
@@ -57,11 +63,11 @@ int main( int argc, char** argv ) {
     shData* data = (shData*) Shmat( mem_id, NULL, 0 );
 
     // mutex semaphore
-    sem_t* shm_mutex = Sem_open2( "leachjr_shm_mutex", 0 );
+    sem_t* shm_mutex = Sem_open2( MEM_MUTEX_NAME, 0 );
 
     // rendezvous semaphore
-    sem_t *factories_done = Sem_open2( "leachjr_factories_done", 0 );
-    sem_t *print_report   = Sem_open2( "leachjr_print_report",   0 );
+    sem_t *factories_done = Sem_open2( FAC_DONE_SEM_NAME,     0 );
+    sem_t *print_report   = Sem_open2( PRINT_REPORT_SEM_NAME, 0 );
 
 
     // variables for supervising loop

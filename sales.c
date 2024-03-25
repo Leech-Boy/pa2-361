@@ -1,9 +1,10 @@
-/*-------------------------------------------
+/*----------------------------------------------------
 Assignment  :   PA2-IPC
 Date        :   03/25/2024
-Authors     :   Josiah Leach    Luke Hennessy henneslk@dukes.jmu.edu
+Authors     :   Josiah Leach    leachjr@dukes.jmu.edu
+                Luke Hennessy   henneslk@dukes.jmu.edu
 File Name   :   sales.c
--------------------------------------------*/
+----------------------------------------------------*/
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -17,12 +18,16 @@ File Name   :   sales.c
 #include "wrappers.h"
 #include "shmem.h"
 
+#define LOG_MUTEX_NAME
+#define MEM_MUTEX_NAME
+#define FAC_DONE_SEM_NAME
+#define PRINT_REPORT_SEM_NAME
+
 void cleanup();
 void sigHandle(int);
 
 // Global variables required for cleanup
 sem_t *factory_mutex, *shm_mutex, *factories_done, *print_report;
-//key_t mail_key, mem_key;
 int mail_id, mem_id;
 shData *data;
 
@@ -32,10 +37,10 @@ void cleanup() {
 
     msgctl( mail_id, IPC_RMID, NULL );
 
-    Sem_close( factory_mutex );  Sem_unlink( "leachjr_factory.log" );
-    Sem_close( shm_mutex );      Sem_unlink( "leachjr_shm_mutex" );
-    Sem_close( factories_done ); Sem_unlink( "leachjr_factories_done" );
-    Sem_close( print_report );   Sem_unlink( "leachjr_print_report" );
+    Sem_close( factory_mutex );  Sem_unlink( LOG_MUTEX_NAME );
+    Sem_close( shm_mutex );      Sem_unlink( MEM_MUTEX_NAME );
+    Sem_close( factories_done ); Sem_unlink( FAC_DONE_SEM_NAME );
+    Sem_close( print_report );   Sem_unlink( PRINT_REPORT_SEM_NAME );
 }
 
 void sigHandle (int sig) {
@@ -83,12 +88,12 @@ int main (int argc, char** argv) {
     data -> remain     = size;
 
     // mutex semaphores
-    factory_mutex  = Sem_open( "leachjr_factory.log",    O_CREAT | O_EXCL, S_IRUSR | S_IWUSR, 1 );
-    shm_mutex      = Sem_open( "leachjr_shm_mutex",      O_CREAT | O_EXCL, S_IRUSR | S_IWUSR, 1 );
+    factory_mutex  = Sem_open( LOG_MUTEX_NAME, O_CREAT | O_EXCL, S_IRUSR | S_IWUSR, 1 );
+    shm_mutex      = Sem_open( MEM_MUTEX_NAME, O_CREAT | O_EXCL, S_IRUSR | S_IWUSR, 1 );
 
     // rendezvous semaphores
-    factories_done = Sem_open( "leachjr_factories_done", O_CREAT | O_EXCL, S_IRUSR | S_IWUSR, 0 );
-    print_report   = Sem_open( "leachjr_print_report",   O_CREAT | O_EXCL, S_IRUSR | S_IWUSR, 0 );
+    factories_done = Sem_open( FAC_DONE_SEM_NAME,       O_CREAT | O_EXCL, S_IRUSR | S_IWUSR, 0 );
+    print_report   = Sem_open( PRINT_REPORT_SEM_NAME,   O_CREAT | O_EXCL, S_IRUSR | S_IWUSR, 0 );
 
 
     // prepare to make factories
@@ -116,8 +121,10 @@ int main (int argc, char** argv) {
             // redirect stdout to mutex protected factory.log
             dup2( factory_fd, STDOUT_FILENO );
 
-            //TODO: check for failure
-            execlp( "./factory", "factory", id, capacity, duration, (char*) NULL );
+            if ( execlp( "./factory", "factory", id, capacity, duration, (char*) NULL ) == -1 ) {
+                perror("factory exec failed");
+                return -1;
+            }
         }
 
         printf( 
@@ -140,8 +147,10 @@ int main (int argc, char** argv) {
         char numlines[3];
         snprintf( numlines, 3, "%d", n );
 
-        //TODO: check for failure
-        execlp( "./supervisor", "supervisor", numlines, (char*) NULL );
+        if ( execlp( "./supervisor", "supervisor", numlines, (char*) NULL ) == -1 ) {
+            perror("exec supervisor failed");
+            return -1;
+        }
     }
 
 
